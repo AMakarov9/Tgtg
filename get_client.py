@@ -1,7 +1,11 @@
 from tgtg import TgtgClient
 
 def get_tokens(emaila: str): 
-    client = TgtgClient(email=emaila)
+
+    # Create the client based on the tgtg API. 
+    # Tokens are always new for each session. 
+
+    client = TgtgClient(email = emaila)
     credentials = client.get_credentials()
     tokens = []
     for i in credentials: 
