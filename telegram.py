@@ -12,7 +12,7 @@ logging.basicConfig (format = '%(asctime)s - %(name)s - %(levelname)s - %(messag
 
 
 # PASTE TELEGRAM BOT TOKEN FROM BOTFATHER 
-BOT_TOKEN = ''
+BOT_TOKEN = '6791600330:AAEKTGmdV5-_jJeUiGNx5ZZ0q0-_JdipPiU'
 
 
 bot = Bot(BOT_TOKEN, parse_mode = "HTML", disable_web_page_preview = True)
@@ -20,7 +20,7 @@ dp = Dispatcher(bot)
 
 user_state = dict()
 
-# Message.chat.id is my personal id. Put it in to prevent potential spam (?). 
+# Message.chat.id is my personal chat id. Commented it out since you'll also be using it. 
 
 @dp.message_handler(commands = 'start')
 async def command_start(message: types.Message):
@@ -64,9 +64,6 @@ async def message(message: types.Message):
             else:
                 await message.answer (
                     text = f'Verification failed'
-                )
-                await message.answer (
-                    text = f'This is the wrong mail: {message.text}'
                 )
             user_state[message.chat.id] = None
 
