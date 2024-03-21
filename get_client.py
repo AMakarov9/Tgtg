@@ -7,10 +7,5 @@ def get_tokens(emaila: str):
 
     client = TgtgClient(email = emaila)
     credentials = client.get_credentials()
-    tokens = []
-    for i in credentials: 
-        if i in ["access_token", "refresh_token", "user_id", "cookie"]: 
-            tokens.append(credentials[i])
-
-    client = TgtgClient(access_token=tokens[0], refresh_token=tokens[1], user_id=tokens[2], cookie=tokens[3])
+    client = TgtgClient(access_token=credentials["access_token"], refresh_token=credentials["refresh_token"], user_id=credentials[user_id], cookie=credentials["datadome_cookie"])
     return client
