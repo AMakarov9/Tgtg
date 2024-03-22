@@ -6,7 +6,13 @@ from aiogram.dispatcher import FSMContext
 from time import sleep
 from tgtg import TgtgClient
 from time import gmtime, strftime
-import tgtg, asyncio, logging, test
+import tgtg, asyncio, logging, sqlite3, os, signal, requests
+from datetime import datetime
+import items
+import threading
+def sendM(id, beskjed): 
+    url = f"https://api.telegram.org/bot6791600330:AAHXgUe5meT1c3-gZaPjgNMPVxcYiwWwHTU/sendMessage?chat_id={id}&text={beskjed}"
+    requests.get(url)
 
 
 def get_tokens(emaila: str): 
@@ -40,7 +46,7 @@ def get_available_items(client: TgtgClient):
         return False
     else: 
         return ute
-        logging.info(ute, tid)
+        
 
 
 #def run(client):
@@ -53,13 +59,13 @@ def run():
 
         print("Feil ved innlogging: Kontroller at e-postadressen er korrekt.")
         return 
-client = get_tokens("")
+#client = get_tokens("")
 
 currentOut = []
 currentAvail = len(currentOut)
 avail = None     
 
-BOT_TOKEN = ''
+BOT_TOKEN = '6791600330:AAHXgUe5meT1c3-gZaPjgNMPVxcYiwWwHTU'
 
 bot = Bot(BOT_TOKEN, parse_mode = "HTML", disable_web_page_preview = True)
 dp = Dispatcher(bot)
@@ -78,19 +84,25 @@ async def command_start(message: types.Message):
     # if message.chat.id == 1778925351: 
     user_state[message.chat.id] = 'start'
         #logging.info("Checked available bags - svar is: " + str(svar))
-    while True: 
-        await asyncio.sleep(10)
-        svar = get_available_items(client)
-        if svar: 
-            for i in svar: 
-                if i not in currentOut:
-                    await message.answer (text = i)
-            currentOut = svar
-        else: 
-            currentOut = [] 
-        
-        
+    with sqlite3.connect('db.db') as c: 
+        row = c.execute('SELECT * FROM user WHERE chat_id=?', (message.chat.id,)).fetchone()
+        if row == None: 
+            c.execute('INSERT INTO user (chat_id, first_name) VALUES (?, ?)', (message.chat.id, message.chat.first_name))
+            await message.answer (text = "You have been added as user and will receive notification.")
 
+    
+        
+   # while True: 
+   #     await asyncio.sleep(10)
+   #     svar = get_available_items(client)
+   #     if svar: 
+   #         for i in svar: 
+   #             if i not in currentOut:
+   #                 await message.answer (text = i)
+   #         currentOut = svar
+   #     else: 
+   #         currentOut = [] 
+    
 @dp.message_handler(commands='help')
 async def help_command(message: types.Message): 
     user_state[message.chat.id] = 'help'
@@ -102,7 +114,46 @@ async def command_status(message: types.Message):
     user_state[message.chat.id] = 'status'
     await message.reply(text=f"{currentAvail} available")
 
+async def searchingBags():  
+    currentOut = [] 
+    while True: 
+        await asyncio.sleep(10)
+        #availableBags = get_available_items(client)
+        availableBags = items.items
+        logging.info("Fetching available bags.")
+        if availableBags: 
+            for i in availableBags: 
+                if i not in currentOut: 
+                    tid = datetime.now().strftime("%H:%M:%S")
+                    with sqlite3.connect('db.db') as c: 
+                        rows = c.execute("SELECT chat_id FROM user").fetchall()
+                    for row in rows: 
+                        try: 
+                            i = i['store']['store_name']
+                            print(i)
+                            sendM(row[0], f"{i} {tid}")
+                            #await bot.send_message(chat_id = row[0], text = f"{i} {tid}")
+                        except Exception as error: 
+                            print(error) 
+            currentOut = availableBags
+        else: 
+            currentOut = []
+
+def runSearchBags(): 
+    print("searching bags")
+    asyncio.run(searchingBags())
+
+def signal_handler(sig, frame): 
+    def force_exit(): 
+        print("Forcing stop of program")
+        os.kill(os.getpid(), signal.SIGILL)
+    force_exit()
+
+
 if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal_handler)
+    thread = threading.Thread(target = runSearchBags)
+    thread.start()
     executor.start_polling(dp)
  
     
