@@ -10,31 +10,32 @@ import tgtg, asyncio, logging, sqlite3, os, signal, requests
 from datetime import datetime
 import items
 import threading
+
+BOT_TOKEN = '6791600330:AAGH3LH_SN6J7Ts3bTGnQSy3kJSRLdXHL14'
+bot = Bot(BOT_TOKEN, parse_mode = "HTML", disable_web_page_preview = True)
+dp = Dispatcher(bot)
+user_state = dict()
+logging.basicConfig (format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', level = logging.INFO)
+
 def sendM(id, beskjed): 
-    url = f"https://api.telegram.org/bot6791600330:AAHXgUe5meT1c3-gZaPjgNMPVxcYiwWwHTU/sendMessage?chat_id={id}&text={beskjed}"
+    url = f"https://api.telegram.org/{bot}/sendMessage?chat_id={id}&text={beskjed}"
     requests.get(url)
 
 
 def get_tokens(emaila: str): 
     # Tokens are always new for each session. 
-
     client = TgtgClient(email = emaila)
     credentials = client.get_credentials()
     client = TgtgClient(access_token=credentials["access_token"], refresh_token=credentials["refresh_token"], user_id=credentials["user_id"], cookie=credentials["cookie"])
     return client
 
-logging.basicConfig (format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', level = logging.INFO)
-
 def get_available_items(client: TgtgClient):
 #def get_available_items():
-
     tid = strftime("%H:%M", gmtime())
     logging.info("Checking for available bags at %s", tid)
-    
     items = client.get_items()
     #itemTest = items
     ute = []
-
     for i in items: 
         if len(i) > 12: 
             if i['in_sales_window'] and i['items_available'] > 0: 
@@ -49,36 +50,6 @@ def get_available_items(client: TgtgClient):
         
 
 
-#def run(client):
-def run():
-    try:
-        return get_available_items()
-        #return get_available_items(client)
-
-    except tgtg.exceptions.TgtgLoginError as e:
-
-        print("Feil ved innlogging: Kontroller at e-postadressen er korrekt.")
-        return 
-#client = get_tokens("")
-
-currentOut = []
-currentAvail = len(currentOut)
-avail = None     
-
-BOT_TOKEN = '6791600330:AAHXgUe5meT1c3-gZaPjgNMPVxcYiwWwHTU'
-
-bot = Bot(BOT_TOKEN, parse_mode = "HTML", disable_web_page_preview = True)
-dp = Dispatcher(bot)
-
-user_state = dict()
-
-HELP_COMMAND = '''
-/start - Notification when bag available
-/help - All commands
-/status - Tells if any bags are available
-/add (Only for admin) - adds user
-'''
-
 @dp.message_handler(commands = 'start')
 async def command_start(message: types.Message):
     # if message.chat.id == 1778925351: 
@@ -91,28 +62,20 @@ async def command_start(message: types.Message):
             await message.answer (text = "You have been added as user and will receive notification.")
 
     
-        
-   # while True: 
-   #     await asyncio.sleep(10)
-   #     svar = get_available_items(client)
-   #     if svar: 
-   #         for i in svar: 
-   #             if i not in currentOut:
-   #                 await message.answer (text = i)
-   #         currentOut = svar
-   #     else: 
-   #         currentOut = [] 
-    
+HELP_COMMAND = '''
+/start - Notification when bag available
+/help - All commands
+''' 
 @dp.message_handler(commands='help')
 async def help_command(message: types.Message): 
     user_state[message.chat.id] = 'help'
 
     await message.reply(text=HELP_COMMAND)
 
-@dp.message_handler(commands = 'status')
-async def command_status(message: types.Message): 
-    user_state[message.chat.id] = 'status'
-    await message.reply(text=f"{currentAvail} available")
+# @dp.message_handler(commands = 'status')
+# async def command_status(message: types.Message): 
+#     user_state[message.chat.id] = 'status'
+#     await message.reply(text=f"{currentAvail} available")
 
 async def searchingBags():  
     currentOut = [] 
