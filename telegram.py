@@ -11,12 +11,13 @@ from datetime import datetime
 import items
 import threading
 
-BOT_TOKEN = '6791600330:AAGH3LH_SN6J7Ts3bTGnQSy3kJSRLdXHL14'
+BOT_TOKEN = ''
+ACCOUNT_EMAIL = ''
 bot = Bot(BOT_TOKEN, parse_mode = "HTML", disable_web_page_preview = True)
 dp = Dispatcher(bot)
 user_state = dict()
 logging.basicConfig (format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', level = logging.INFO)
-
+#client = get_tokens(ACCOUNT_EMAIL)
 def sendM(id, beskjed): 
     url = f"https://api.telegram.org/{bot}/sendMessage?chat_id={id}&text={beskjed}"
     requests.get(url)
