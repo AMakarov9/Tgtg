@@ -60,7 +60,7 @@ def run():
 
 
 # GETS CLIENT BEFORE ANYTHING STARTS. 
-client = get_tokens("gran.shenvari@hotmail.com")
+client = get_tokens("")
 
 currentOut = []
 currentAvail = len(currentOut)
@@ -80,7 +80,7 @@ async def background_task():
 
 
 
-BOT_TOKEN = '6791600330:AAH18F6TG4f3oQ_QJ6QrbShYPoKaPO7IkaQ'
+BOT_TOKEN = ''
 
 
 bot = Bot(BOT_TOKEN, parse_mode = "HTML", disable_web_page_preview = True)
