@@ -8,18 +8,17 @@ from tgtg import TgtgClient
 from time import gmtime, strftime
 import tgtg, asyncio, logging, sqlite3, os, signal, requests
 from datetime import datetime
-import items
 import threading
 
-BOT_TOKEN = ''
-ACCOUNT_EMAIL = ''
+BOT_TOKEN = '6791600330:AAFQrAxzt6mpcaSdSokVM_W_ezhBko2iMLQ'
+ACCOUNT_EMAIL = 'gran.shenvari@hotmail.com'
 bot = Bot(BOT_TOKEN, parse_mode = "HTML", disable_web_page_preview = True)
 dp = Dispatcher(bot)
 user_state = dict()
 logging.basicConfig (format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', level = logging.INFO)
-#client = get_tokens(ACCOUNT_EMAIL)
+
 def sendM(id, beskjed): 
-    url = f"https://api.telegram.org/{bot}/sendMessage?chat_id={id}&text={beskjed}"
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={id}&text={beskjed}"
     requests.get(url)
 
 
@@ -29,11 +28,12 @@ def get_tokens(emaila: str):
     credentials = client.get_credentials()
     client = TgtgClient(access_token=credentials["access_token"], refresh_token=credentials["refresh_token"], user_id=credentials["user_id"], cookie=credentials["cookie"])
     return client
+client = get_tokens(ACCOUNT_EMAIL)
 
 def get_available_items(client: TgtgClient):
 #def get_available_items():
     tid = strftime("%H:%M", gmtime())
-    logging.info("Checking for available bags at %s", tid)
+    #logging.info("Checking for available bags at %s", tid)
     items = client.get_items()
     #itemTest = items
     ute = []
@@ -44,7 +44,7 @@ def get_available_items(client: TgtgClient):
                 logging.info(f"Added {i['store']['store_name']}")
     
     if len(ute) == 0: 
-        logging.info("No bags available")
+        #logging.info("No bags available")
         return False
     else: 
         return ute
@@ -82,8 +82,8 @@ async def searchingBags():
     currentOut = [] 
     while True: 
         await asyncio.sleep(10)
-        #availableBags = get_available_items(client)
-        availableBags = items.items
+        availableBags = get_available_items(client)
+        #availableBags = items.items
         logging.info("Fetching available bags.")
         if availableBags: 
             for i in availableBags: 
@@ -93,8 +93,8 @@ async def searchingBags():
                         rows = c.execute("SELECT chat_id FROM user").fetchall()
                     for row in rows: 
                         try: 
-                            i = i['store']['store_name']
-                            print(i)
+                            
+                            print(row[0], f"{i} {tid}")
                             sendM(row[0], f"{i} {tid}")
                             #await bot.send_message(chat_id = row[0], text = f"{i} {tid}")
                         except Exception as error: 
